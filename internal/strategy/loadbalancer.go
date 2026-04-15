@@ -316,17 +316,26 @@ func (r *LoadBalancer) RunBatchTransfer(
 		return fmt.Errorf("failed to install batch rsync: %w", err)
 	}
 
-	// Wait for the job to finish.
-	showProgressBar := firstReq.ShowProgressBar
+	// Wait for the job to finish (or just start, if detaching).
 	kubeClient := firstDestInfo.ClusterClient.KubeClient
 	jobName := destReleaseName + "-rsync"
+
+	if firstReq.Detach {
+		if _, err := k8s.WaitForJobStart(ctx, kubeClient, firstDestInfo.Claim.Namespace, jobName, logger); err != nil {
+			return fmt.Errorf("failed to wait for batch rsync job to start: %w", err)
+		}
+
+		attempt.Detached = true
+
+		return nil
+	}
 
 	if err := k8s.WaitForJobCompletion(
 		ctx,
 		kubeClient,
 		firstDestInfo.Claim.Namespace,
 		jobName,
-		showProgressBar,
+		firstReq.ShowProgressBar,
 		firstReq.Writer,
 		logger,
 	); err != nil {

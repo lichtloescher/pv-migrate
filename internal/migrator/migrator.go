@@ -412,18 +412,26 @@ func (m *Migrator) runBatchLB(
 		return fmt.Errorf("failed to setup shared source endpoint: %w", err)
 	}
 
-	// Ensure the shared source is cleaned up when we're done.
+	// Ensure the shared source is cleaned up when we're done —
+	// unless we are detaching (the rsync job still needs the sshd pod).
 	noCleanup := firstMig.Request.NoCleanup
+	detach := firstMig.Request.Detach
 
 	defer func() {
-		if !noCleanup {
-			lbStrat.CleanupSharedSource(
-				allSourceInfos[0], shared.ReleaseName,
-				firstMig.Request.HelmTimeout, logger,
-			)
-		} else {
-			logger.Info("🧹 Shared source cleanup skipped (--no-cleanup)")
+		if detach || noCleanup {
+			if detach {
+				logger.Info("🧹 Shared source cleanup skipped (--detach)")
+			} else {
+				logger.Info("🧹 Shared source cleanup skipped (--no-cleanup)")
+			}
+
+			return
 		}
+
+		lbStrat.CleanupSharedSource(
+			allSourceInfos[0], shared.ReleaseName,
+			firstMig.Request.HelmTimeout, logger,
+		)
 	}()
 
 	// Build batch transfer infos for the single rsync job.
@@ -459,6 +467,15 @@ func (m *Migrator) runBatchLB(
 		shared.KeyAlgorithm, batchTransfers, logger,
 	); err != nil {
 		return fmt.Errorf("batch transfer failed: %w", err)
+	}
+
+	if destAttempt.Detached {
+		// Collect all release names so `pv-migrate cleanup` can remove them.
+		destAttempt.ReleaseNames = append(destAttempt.ReleaseNames, shared.ReleaseName)
+
+		printDetachMessage(firstMig.Request, sessionID, "loadbalancer", logger)
+
+		return nil
 	}
 
 	logger.Info("✅ Batch transfer succeeded", "transfers", len(transfers))
