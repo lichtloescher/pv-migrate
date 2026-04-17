@@ -443,13 +443,9 @@ func (m *Migrator) runBatchLB(
 				t.migration.SourceInfo.Claim.Name)
 		}
 
-		destMP := strategy.destMountPath + "/" + t.migration.DestInfo.Claim.Name
-		batchTransfers = append(batchTransfers, strategy.BatchTransferInfo{
-			SourceMountPath: srcMountPath,
-			DestInfo:        t.migration.DestInfo,
-			destMountPath:   destMP,
-			Request:         t.request,
-		})
+		batchTransfers = append(batchTransfers, strategy.NewBatchTransferInfo(
+			srcMountPath, t.migration.DestInfo, t.request,
+		))
 	}
 
 	// Create a synthetic attempt for the batch dest rsync job.
@@ -463,8 +459,7 @@ func (m *Migrator) runBatchLB(
 		"source_pvcs", len(transfers), "dest_pvcs", len(transfers))
 
 	if err := lbStrat.RunBatchTransfer(
-		ctx, destAttempt, shared.Address, shared.PrivateKey,
-		shared.KeyAlgorithm, batchTransfers, logger,
+		ctx, destAttempt, shared, batchTransfers, logger,
 	); err != nil {
 		return fmt.Errorf("batch transfer failed: %w", err)
 	}

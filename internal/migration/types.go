@@ -62,8 +62,8 @@ type SourceEndpoint struct {
 	Address string
 	// ReleaseName is the Helm release name of the shared source sshd endpoint.
 	ReleaseName string
-	// srcMountPath is the mount path of this specific source PVC on the shared sshd pod.
-	srcMountPath string
+	// SrcMountPath is the mount path of this specific source PVC on the shared sshd pod.
+	SrcMountPath string
 	// PrivateKey is the SSH private key corresponding to the shared source's public key.
 	PrivateKey string
 	// KeyAlgorithm is the SSH key algorithm used (e.g. "ed25519").
