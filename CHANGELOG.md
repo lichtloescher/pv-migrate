@@ -10,10 +10,6 @@
   **single** LoadBalancer service. Rsync jobs then run sequentially against that
   shared endpoint.
 
-- **`lbsvc` strategy alias**
-  `lbsvc` is now accepted as an alias for `loadbalancer`, preserving
-  compatibility with existing wrapper scripts.
-
 ### Known Bugs
 
 - **Spurious "Failed to watch" log during cleanup**
