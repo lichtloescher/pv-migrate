@@ -29,8 +29,8 @@ const (
 	localStrategy        = "local"
 	nodePortStrategy     = "nodeport"
 
-	SrcMountPath  = "/source"
-	DestMountPath = "/dest"
+	srcMountPath  = "/source"
+	destMountPath = "/dest"
 
 	rootSSHUser    = "root"
 	rootSSHPort    = 22

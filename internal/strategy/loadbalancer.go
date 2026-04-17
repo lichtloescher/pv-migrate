@@ -57,7 +57,7 @@ func (r *LoadBalancer) SetupSharedSource(
 	pvcMounts := make([]map[string]any, 0, len(allSourceInfos))
 
 	for _, info := range allSourceInfos {
-		mountPath := SrcMountPath + "/" + info.Claim.Name
+		mountPath := srcMountPath + "/" + info.Claim.Name
 		mountPaths[info.Claim.Name] = mountPath
 		pvcMounts = append(pvcMounts, map[string]any{
 			"name":      info.Claim.Name,
@@ -183,8 +183,8 @@ func (r *LoadBalancer) runWithSharedSource(
 		sshTargetHost = mig.Request.DestHostOverride
 	}
 
-	srcPath := ep.SrcMountPath + "/" + mig.Request.Source.Path
-	destPath := DestMountPath + "/" + mig.Request.Dest.Path
+	srcPath := ep.srcMountPath + "/" + mig.Request.Source.Path
+	destPath := destMountPath + "/" + mig.Request.Dest.Path
 	rsyncCmd := rsync.Cmd{
 		NoChown:    mig.Request.NoChown,
 		NonRoot:    mig.Request.NonRoot,
@@ -203,7 +203,7 @@ func (r *LoadBalancer) runWithSharedSource(
 		return fmt.Errorf("failed to build rsync command: %w", err)
 	}
 
-	rsyncSide := componentSide{info: destInfo, mountPath: DestMountPath}
+	rsyncSide := componentSide{info: destInfo, mountPath: destMountPath}
 	rsyncVals := buildRsyncHelmValues(rsyncSide, rsyncCmdStr, ep.PrivateKey, privateKeyMountPath)
 	rsyncVals["sshRemoteHost"] = sshTargetHost
 
@@ -228,8 +228,8 @@ type BatchTransferInfo struct {
 	SourceMountPath string
 	// DestInfo is the PVC info for the destination PVC.
 	DestInfo *pvc.Info
-	// DestMountPath is the mount path for this dest PVC on the batch rsync pod.
-	DestMountPath string
+	// destMountPath is the mount path for this dest PVC on the batch rsync pod.
+	destMountPath string
 	// Request is the migration request for this specific PVC pair.
 	Request *migration.Request
 }
@@ -274,7 +274,7 @@ func (r *LoadBalancer) RunBatchTransfer(
 	entries := make([]rsync.BatchEntry, 0, len(transfers))
 	for _, t := range transfers {
 		srcPath := t.SourceMountPath + "/" + t.Request.Source.Path
-		destPath := t.DestMountPath + "/" + t.Request.Dest.Path
+		destPath := t.destMountPath + "/" + t.Request.Dest.Path
 		entries = append(entries, rsync.BatchEntry{SrcPath: srcPath, DestPath: destPath})
 	}
 
@@ -288,7 +288,7 @@ func (r *LoadBalancer) RunBatchTransfer(
 	for _, t := range transfers {
 		pvcMounts = append(pvcMounts, map[string]any{
 			"name":      t.DestInfo.Claim.Name,
-			"mountPath": t.DestMountPath,
+			"mountPath": t.destMountPath,
 		})
 	}
 

@@ -339,8 +339,8 @@ func proxyConn(ctx context.Context, src net.Conn, destPort int, logger *slog.Log
 }
 
 func buildRsyncCmdLocal(mig *migration.Migration) (string, error) {
-	srcPath := SrcMountPath + "/" + mig.Request.Source.Path
-	destPath := DestMountPath + "/" + mig.Request.Dest.Path
+	srcPath := srcMountPath + "/" + mig.Request.Source.Path
+	destPath := destMountPath + "/" + mig.Request.Dest.Path
 
 	rsyncCmd := rsync.Cmd{
 		Port:        mig.Request.SSHReverseTunnelPort,
@@ -392,7 +392,7 @@ func installLocalOnSource(
 	mig := attempt.Migration
 	side := componentSide{
 		info:      mig.SourceInfo,
-		mountPath: SrcMountPath,
+		mountPath: srcMountPath,
 		readOnly:  !mig.Request.SourceMountReadWrite,
 	}
 
@@ -406,7 +406,7 @@ func installLocalOnSource(
 
 func installLocalOnDest(attempt *migration.Attempt, releaseName, publicKey string, logger *slog.Logger) error {
 	mig := attempt.Migration
-	side := componentSide{info: mig.DestInfo, mountPath: DestMountPath}
+	side := componentSide{info: mig.DestInfo, mountPath: destMountPath}
 
 	return installHelmChart(
 		attempt, mig.DestInfo, releaseName, map[string]any{"sshd": buildSshdHelmValues(side, publicKey)}, logger,

@@ -36,12 +36,12 @@ func (r *Mount) Run(ctx context.Context, attempt *migration.Attempt, logger *slo
 			"pvcMounts": []map[string]any{
 				{
 					"name":      sourceInfo.Claim.Name,
-					"mountPath": SrcMountPath,
+					"mountPath": srcMountPath,
 					"readOnly":  !mig.Request.SourceMountReadWrite,
 				},
 				{
 					"name":      destInfo.Claim.Name,
-					"mountPath": DestMountPath,
+					"mountPath": destMountPath,
 				},
 			},
 			"command":  rsyncCmd,
@@ -86,8 +86,8 @@ func (r *Mount) cannotDoReason(t *migration.Migration) string {
 }
 
 func buildRsyncCmdMount(mig *migration.Migration) (string, error) {
-	srcPath := SrcMountPath + "/" + mig.Request.Source.Path
-	destPath := DestMountPath + "/" + mig.Request.Dest.Path
+	srcPath := srcMountPath + "/" + mig.Request.Source.Path
+	destPath := destMountPath + "/" + mig.Request.Dest.Path
 
 	rsyncCmd := rsync.Cmd{
 		NoChown:   mig.Request.NoChown,

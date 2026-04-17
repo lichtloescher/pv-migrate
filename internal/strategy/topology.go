@@ -42,15 +42,15 @@ func resolveTopology(mig *migration.Migration) topology {
 	if mig.Request.Push {
 		return topology{
 			push:  true,
-			sshd:  componentSide{info: dst, mountPath: DestMountPath, readOnly: false},
-			rsync: componentSide{info: src, mountPath: SrcMountPath, readOnly: srcReadOnly},
+			sshd:  componentSide{info: dst, mountPath: destMountPath, readOnly: false},
+			rsync: componentSide{info: src, mountPath: srcMountPath, readOnly: srcReadOnly},
 		}
 	}
 
 	return topology{
 		push:  false,
-		sshd:  componentSide{info: src, mountPath: SrcMountPath, readOnly: srcReadOnly},
-		rsync: componentSide{info: dst, mountPath: DestMountPath, readOnly: false},
+		sshd:  componentSide{info: src, mountPath: srcMountPath, readOnly: srcReadOnly},
+		rsync: componentSide{info: dst, mountPath: destMountPath, readOnly: false},
 	}
 }
 
@@ -127,8 +127,8 @@ func buildRsyncCmd(req *migration.Request, push bool, sshHost string, port int) 
 		NoChown:   req.NoChown,
 		NonRoot:   req.NonRoot,
 		Delete:    req.DeleteExtraneousFiles,
-		SrcPath:   SrcMountPath + "/" + req.Source.Path,
-		DestPath:  DestMountPath + "/" + req.Dest.Path,
+		SrcPath:   srcMountPath + "/" + req.Source.Path,
+		DestPath:  destMountPath + "/" + req.Dest.Path,
 		Compress:  !req.NoCompress,
 		ExtraArgs: req.RsyncExtraArgs,
 	}

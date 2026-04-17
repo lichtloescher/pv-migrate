@@ -443,11 +443,11 @@ func (m *Migrator) runBatchLB(
 				t.migration.SourceInfo.Claim.Name)
 		}
 
-		destMP := strategy.DestMountPath + "/" + t.migration.DestInfo.Claim.Name
+		destMP := strategy.destMountPath + "/" + t.migration.DestInfo.Claim.Name
 		batchTransfers = append(batchTransfers, strategy.BatchTransferInfo{
 			SourceMountPath: srcMountPath,
 			DestInfo:        t.migration.DestInfo,
-			DestMountPath:   destMP,
+			destMountPath:   destMP,
 			Request:         t.request,
 		})
 	}
