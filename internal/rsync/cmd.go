@@ -8,21 +8,23 @@ import (
 )
 
 type Cmd struct {
-	Port        int
-	NoChown     bool
-	NonRoot     bool
-	Delete      bool
-	SrcUseSSH   bool
-	DestUseSSH  bool
-	Command     string
-	SrcSSHUser  string
-	SrcSSHHost  string
-	SrcPath     string
-	DestSSHUser string
-	DestSSHHost string
-	DestPath    string
-	Compress    bool
-	ExtraArgs   string
+	Port            int
+	NoChown         bool
+	NonRoot         bool
+	Delete          bool
+	DeleteAfter     bool
+	ExcludeSnapshot bool
+	SrcUseSSH       bool
+	DestUseSSH      bool
+	Command         string
+	SrcSSHUser      string
+	SrcSSHHost      string
+	SrcPath         string
+	DestSSHUser     string
+	DestSSHHost     string
+	DestPath        string
+	Compress        bool
+	ExtraArgs       string
 }
 
 //nolint:cyclop
@@ -71,6 +73,14 @@ func (c *Cmd) Build() (string, error) {
 
 	if c.Delete {
 		rsyncArgs = append(rsyncArgs, "--delete")
+	}
+
+	if c.DeleteAfter {
+		rsyncArgs = append(rsyncArgs, "--delete-after")
+	}
+
+	if c.ExcludeSnapshot {
+		rsyncArgs = append(rsyncArgs, "--exlude='.snapshot'")
 	}
 
 	if c.ExtraArgs != "" {
