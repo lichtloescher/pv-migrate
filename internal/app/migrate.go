@@ -81,6 +81,8 @@ const (
 	FlagSSHKeyAlgorithm           = "ssh-key-algorithm"
 	FlagSSHReverseTunnelPort      = "ssh-reverse-tunnel-port"
 	FlagNoCompress                = "no-compress"
+	FlagDeleteAfter               = "delete-after"
+	FlagExcludeSnapshot           = "exclude-snapshot"
 	FlagNonRoot                   = "non-root"
 	FlagRsyncExtraArgs            = "rsync-extra-args"
 	FlagRsyncPush                 = "rsync-push"
@@ -325,6 +327,13 @@ func setMigrateCmdFlags(cmd *cobra.Command, options *Options, logLevels, logForm
 	)
 	flags.BoolVar(&migration.NoCompress, FlagNoCompress, migration.NoCompress,
 		"Do not compress data during migration (disables rsync -z)")
+
+	flags.BoolVar(&migration.DeleteAfter, FlagDeleteAfter, migration.DeleteAfter,
+		"Enables rsync --delete-after")
+
+	flags.BoolVar(&migration.ExcludeSnapshot, FlagExcludeSnapshot, migration.ExcludeSnapshot,
+		"Do not compress data during migration (disables rsync -z)")
+
 	flags.BoolVar(&migration.NonRoot, FlagNonRoot, migration.NonRoot,
 		"Run containers as non-root (removes SYS_CHROOT; required for restricted PodSecurity clusters). "+
 			"Skips ownership and directory timestamp preservation (--no-o --no-g --omit-dir-times). "+

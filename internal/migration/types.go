@@ -24,6 +24,8 @@ type Request struct {
 	Source                PVCInfo
 	Dest                  PVCInfo
 	DeleteExtraneousFiles bool
+	DeleteAfter           bool
+	ExcludeSnapshot       bool
 	IgnoreMounted         bool
 	NoChown               bool
 	Detach                bool

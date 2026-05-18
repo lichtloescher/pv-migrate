@@ -343,17 +343,19 @@ func buildRsyncCmdLocal(mig *migration.Migration) (string, error) {
 	destPath := DestMountPath + "/" + mig.Request.Dest.Path
 
 	rsyncCmd := rsync.Cmd{
-		Port:        mig.Request.SSHReverseTunnelPort,
-		NoChown:     mig.Request.NoChown,
-		NonRoot:     mig.Request.NonRoot,
-		Delete:      mig.Request.DeleteExtraneousFiles,
-		SrcPath:     srcPath,
-		DestPath:    destPath,
-		DestUseSSH:  true,
-		DestSSHHost: "localhost",
-		DestSSHUser: sshUser(mig.Request),
-		Compress:    !mig.Request.NoCompress,
-		ExtraArgs:   mig.Request.RsyncExtraArgs,
+		Port:            mig.Request.SSHReverseTunnelPort,
+		NoChown:         mig.Request.NoChown,
+		NonRoot:         mig.Request.NonRoot,
+		Delete:          mig.Request.DeleteExtraneousFiles,
+		DeleteAfter:     mig.Request.DeleteAfter,
+		ExcludeSnapshot: mig.Request.ExcludeSnapshot,
+		SrcPath:         srcPath,
+		DestPath:        destPath,
+		DestUseSSH:      true,
+		DestSSHHost:     "localhost",
+		DestSSHUser:     sshUser(mig.Request),
+		Compress:        !mig.Request.NoCompress,
+		ExtraArgs:       mig.Request.RsyncExtraArgs,
 	}
 
 	cmd, err := rsyncCmd.Build()

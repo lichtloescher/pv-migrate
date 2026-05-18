@@ -91,6 +91,8 @@ type Migration struct {
 	NoCleanupOnFailure    bool
 	ShowProgressBar       bool
 	SourceMountReadWrite  bool
+	DeleteAfter			  bool
+	ExcludeSnapshot       bool
 	NoCompress            bool
 	NonRoot               bool
 	RsyncExtraArgs        string
@@ -253,6 +255,8 @@ func toInternalRequest(mig *Migration) *migration.Request {
 			Path:           mig.Dest.Path,
 		},
 		DeleteExtraneousFiles: mig.DeleteExtraneousFiles,
+		DeleteAfter:		   mig.DeleteAfter,
+		ExcludeSnapshot:       mig.ExcludeSnapshot,
 		IgnoreMounted:         mig.IgnoreMounted,
 		NoChown:               mig.NoChown,
 		Detach:                mig.Detach,
