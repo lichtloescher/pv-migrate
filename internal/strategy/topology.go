@@ -123,14 +123,16 @@ func runTwoReleaseStrategy(
 
 func buildRsyncCmd(req *migration.Request, push bool, sshHost string, port int) rsync.Cmd {
 	cmd := rsync.Cmd{
-		Port:      port,
-		NoChown:   req.NoChown,
-		NonRoot:   req.NonRoot,
-		Delete:    req.DeleteExtraneousFiles,
-		SrcPath:   SrcMountPath + "/" + req.Source.Path,
-		DestPath:  DestMountPath + "/" + req.Dest.Path,
-		Compress:  !req.NoCompress,
-		ExtraArgs: req.RsyncExtraArgs,
+		Port:            port,
+		NoChown:         req.NoChown,
+		NonRoot:         req.NonRoot,
+		Delete:          req.DeleteExtraneousFiles,
+		DeleteAfter:     req.DeleteAfter,
+		ExcludeSnapshot: req.ExcludeSnapshot,
+		SrcPath:         SrcMountPath + "/" + req.Source.Path,
+		DestPath:        DestMountPath + "/" + req.Dest.Path,
+		Compress:        !req.NoCompress,
+		ExtraArgs:       req.RsyncExtraArgs,
 	}
 
 	if push {

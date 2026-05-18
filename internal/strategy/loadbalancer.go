@@ -186,16 +186,18 @@ func (r *LoadBalancer) runWithSharedSource(
 	srcPath := ep.SrcMountPath + "/" + mig.Request.Source.Path
 	destPath := DestMountPath + "/" + mig.Request.Dest.Path
 	rsyncCmd := rsync.Cmd{
-		NoChown:    mig.Request.NoChown,
-		NonRoot:    mig.Request.NonRoot,
-		Delete:     mig.Request.DeleteExtraneousFiles,
-		SrcPath:    srcPath,
-		DestPath:   destPath,
-		SrcUseSSH:  true,
-		SrcSSHHost: sshTargetHost,
-		SrcSSHUser: sshUser(mig.Request),
-		Compress:   !mig.Request.NoCompress,
-		ExtraArgs:  mig.Request.RsyncExtraArgs,
+		NoChown:         mig.Request.NoChown,
+		NonRoot:         mig.Request.NonRoot,
+		Delete:          mig.Request.DeleteExtraneousFiles,
+		DeleteAfter:     mig.Request.DeleteAfter,
+		ExcludeSnapshot: mig.Request.ExcludeSnapshot,
+		SrcPath:         srcPath,
+		DestPath:        destPath,
+		SrcUseSSH:       true,
+		SrcSSHHost:      sshTargetHost,
+		SrcSSHUser:      sshUser(mig.Request),
+		Compress:        !mig.Request.NoCompress,
+		ExtraArgs:       mig.Request.RsyncExtraArgs,
 	}
 
 	rsyncCmdStr, err := rsyncCmd.Build()
@@ -264,11 +266,13 @@ func (r *LoadBalancer) RunBatchTransfer(
 
 	// Build compound rsync command for all pairs.
 	batchCmd := rsync.Cmd{
-		NoChown:    firstReq.NoChown,
-		Delete:     firstReq.DeleteExtraneousFiles,
-		SrcUseSSH:  true,
-		SrcSSHHost: sshHost,
-		Compress:   !firstReq.NoCompress,
+		NoChown:         firstReq.NoChown,
+		Delete:          firstReq.DeleteExtraneousFiles,
+		DeleteAfter:     firstReq.DeleteAfter,
+		ExcludeSnapshot: firstReq.ExcludeSnapshot,
+		SrcUseSSH:       true,
+		SrcSSHHost:      sshHost,
+		Compress:        !firstReq.NoCompress,
 	}
 
 	entries := make([]rsync.BatchEntry, 0, len(transfers))
