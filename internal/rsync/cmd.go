@@ -80,7 +80,7 @@ func (c *Cmd) Build() (string, error) {
 	}
 
 	if c.ExcludeSnapshot {
-		rsyncArgs = append(rsyncArgs, "--exlude='.snapshot'")
+		rsyncArgs = append(rsyncArgs, "--exclude='.snapshot'")
 	}
 
 	if c.ExtraArgs != "" {
