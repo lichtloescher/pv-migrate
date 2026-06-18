@@ -27,17 +27,8 @@ type Cmd struct {
 	ExtraArgs       string
 }
 
-//nolint:cyclop
-func (c *Cmd) Build() (string, error) {
-	if c.SrcUseSSH && c.DestUseSSH {
-		return "", errors.New("cannot use ssh on both source and destination")
-	}
-
-	cmd := "rsync"
-	if c.Command != "" {
-		cmd = c.Command
-	}
-
+// sshArgsStr returns the quoted "-e" ssh command string used for remote transfers.
+func (c *Cmd) sshArgsStr() string {
 	sshArgs := []string{
 		"ssh",
 		"-o", "StrictHostKeyChecking=no",
@@ -52,11 +43,16 @@ func (c *Cmd) Build() (string, error) {
 		sshArgs = append(sshArgs, "-p", strconv.Itoa(c.Port))
 	}
 
-	sshArgsStr := fmt.Sprintf("\"%s\"", strings.Join(sshArgs, " "))
+	return fmt.Sprintf("\"%s\"", strings.Join(sshArgs, " "))
+}
 
+// rsyncArgsStr returns the common rsync flags shared by single and batch
+// transfers. Keeping a single source of truth ensures flags such as
+// ExtraArgs apply consistently to every rsync invocation in a batch.
+func (c *Cmd) rsyncArgsStr() string {
 	rsyncArgs := []string{
 		"-av", "--info=progress2,misc0,flist0",
-		"--no-inc-recursive", "-e", sshArgsStr,
+		"--no-inc-recursive", "-e", c.sshArgsStr(),
 	}
 
 	if c.Compress {
@@ -87,12 +83,23 @@ func (c *Cmd) Build() (string, error) {
 		rsyncArgs = append(rsyncArgs, c.ExtraArgs)
 	}
 
-	rsyncArgsStr := strings.Join(rsyncArgs, " ")
+	return strings.Join(rsyncArgs, " ")
+}
+
+func (c *Cmd) Build() (string, error) {
+	if c.SrcUseSSH && c.DestUseSSH {
+		return "", errors.New("cannot use ssh on both source and destination")
+	}
+
+	cmd := "rsync"
+	if c.Command != "" {
+		cmd = c.Command
+	}
 
 	src := c.buildSrc()
 	dest := c.buildDest()
 
-	return fmt.Sprintf("%s %s %s %s", cmd, rsyncArgsStr, src, dest), nil
+	return fmt.Sprintf("%s %s %s %s", cmd, c.rsyncArgsStr(), src, dest), nil
 }
 
 func (c *Cmd) buildSrc() string {
@@ -152,34 +159,10 @@ func (c *Cmd) BuildBatch(entries []BatchEntry) (string, error) {
 		cmd = c.Command
 	}
 
-	sshArgs := []string{
-		"ssh", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
-		"-o", "ConnectTimeout=5",
-	}
-	if c.Port != 0 {
-		sshArgs = append(sshArgs, "-p", strconv.Itoa(c.Port))
-	}
-
-	sshArgsStr := fmt.Sprintf("\"%s\"", strings.Join(sshArgs, " "))
-
-	rsyncArgs := []string{
-		"-av", "--info=progress2,misc0,flist0",
-		"--no-inc-recursive", "-e", sshArgsStr,
-	}
-
-	if c.Compress {
-		rsyncArgs = append(rsyncArgs, "-z")
-	}
-
-	if c.NoChown {
-		rsyncArgs = append(rsyncArgs, "--no-o", "--no-g")
-	}
-
-	if c.Delete {
-		rsyncArgs = append(rsyncArgs, "--delete")
-	}
-
-	rsyncArgsStr := strings.Join(rsyncArgs, " ")
+	// Share the exact same flag set as a single Build() so that ExtraArgs
+	// (e.g. --iconv), --delete-after, snapshot excludes and SSH keepalives
+	// apply to every entry in the batch, not just the last one.
+	rsyncArgsStr := c.rsyncArgsStr()
 
 	// Build individual commands.
 	var parts []string
