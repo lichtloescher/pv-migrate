@@ -267,12 +267,14 @@ func (r *LoadBalancer) RunBatchTransfer(
 	// Build compound rsync command for all pairs.
 	batchCmd := rsync.Cmd{
 		NoChown:         firstReq.NoChown,
+		NonRoot:         firstReq.NonRoot,
 		Delete:          firstReq.DeleteExtraneousFiles,
 		DeleteAfter:     firstReq.DeleteAfter,
 		ExcludeSnapshot: firstReq.ExcludeSnapshot,
 		SrcUseSSH:       true,
 		SrcSSHHost:      sshHost,
 		Compress:        !firstReq.NoCompress,
+		ExtraArgs:       firstReq.RsyncExtraArgs,
 	}
 
 	entries := make([]rsync.BatchEntry, 0, len(transfers))
